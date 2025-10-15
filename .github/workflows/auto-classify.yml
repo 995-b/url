@@ -1,0 +1,32 @@
+name: URL 自动分类
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # 每天 UTC 时间 0 点执行（北京时间 8 点）
+  push:
+    paths:
+      - "urls.csv"  # 当 urls.csv 被提交时触发
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 运行分类脚本
+        run: |
+          python classify.py
+
+      - name: 提交更新到仓库
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add urls.csv
+          git commit -m "自动更新 URL 分类标签" || echo "无更新需要提交"
+          git push
